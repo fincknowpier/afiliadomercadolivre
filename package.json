@@ -1,0 +1,48 @@
+{
+  "name": "radar-de-ofertas",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MVP de monitoramento autorizado de ofertas do Mercado Livre",
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "poc:ml": "ts-node src/scripts/mercadolivre-poc.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
+    "typeorm": "typeorm-ts-node-commonjs"
+  },
+  "dependencies": {
+    "@nestjs/axios": "^4.0.1",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/platform-express": "^11.1.6",
+    "@nestjs/schedule": "^6.0.1",
+    "@nestjs/typeorm": "^11.0.0",
+    "axios": "^1.12.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "typeorm": "^0.3.27"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.10",
+    "@nestjs/schematics": "^11.0.7",
+    "@nestjs/testing": "^11.1.6",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.6.0",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
+    "eslint": "^9.36.0",
+    "jest": "^30.2.0",
+    "source-map-support": "^0.5.21",
+    "ts-jest": "^29.4.4",
+    "ts-node": "^10.9.2",
+    "typeorm-ts-node-commonjs": "^0.3.20",
+    "typescript": "^5.9.3"
+  }
+}
