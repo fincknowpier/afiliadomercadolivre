@@ -17,7 +17,7 @@ services:
       - key: ML_CLIENT_SECRET
         sync: false
       - key: ML_REDIRECT_URI
-        value: https://api.radarpromocoesreais.com.br/auth/mercadolivre/callback
+        value: https://radar-promocoes-api.onrender.com/auth/mercadolivre/callback
       - key: ML_OAUTH_USE_PKCE
         value: "true"
       - key: ML_SITE_ID
