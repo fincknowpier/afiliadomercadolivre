@@ -23,10 +23,9 @@ export class MercadoLivreAuthController {
     return {
       status: 'VALIDADO',
       account: result.account,
-      proofOfConcept: result.itemProof,
       expiresInSeconds: result.expiresIn,
       tokenStored: false,
-      nextStep: 'Persistir os tokens criptografados antes de ativar o histórico automático.',
+      nextStep: 'Solicitar ao Mercado Livre acesso oficial a anúncios de terceiros para o caso de uso afiliado.',
     };
   }
 }
