@@ -21,16 +21,6 @@ export interface MercadoLivreAccountResponse {
   nickname: string;
 }
 
-export interface MercadoLivreItemProof {
-  id: string;
-  title: string;
-  categoryId: string;
-  permalink: string;
-  currencyId: string;
-  price: number;
-  originalPrice: number | null;
-}
-
 @Injectable()
 export class MercadoLivreAuthService {
   private readonly pending = new Map<string, PendingAuthorization>();
@@ -75,8 +65,7 @@ export class MercadoLivreAuthService {
 
     const token = await this.exchangeCode(input.code, pending.codeVerifier);
     const account = await this.validateToken(token.access_token);
-    const itemProof = await this.querySpecificItem(token.access_token);
-    return { token, account, itemProof, expiresIn: token.expires_in };
+    return { token, account, expiresIn: token.expires_in };
   }
 
   private async exchangeCode(code: string, codeVerifier?: string): Promise<TokenResponse> {
@@ -111,35 +100,6 @@ export class MercadoLivreAuthService {
       return { id: data.id, nickname: data.nickname };
     } catch {
       throw new BadGatewayException('Token recebido, mas a validação em /users/me falhou.');
-    }
-  }
-
-  private async querySpecificItem(accessToken: string): Promise<MercadoLivreItemProof> {
-    const itemId = this.config.get('ML_POC_ITEM_ID', 'MLB5307984376');
-    const headers = { Authorization: `Bearer ${accessToken}` };
-    try {
-      const { data: item } = await firstValueFrom(
-        this.http.get<{
-          id: string;
-          title: string;
-          category_id: string;
-          permalink: string;
-          currency_id: string;
-          price: number;
-          original_price: number | null;
-        }>(`https://api.mercadolibre.com/items/${encodeURIComponent(itemId)}`, { headers }),
-      );
-      return {
-        id: item.id,
-        title: item.title,
-        categoryId: item.category_id,
-        permalink: item.permalink,
-        currencyId: item.currency_id,
-        price: item.price,
-        originalPrice: item.original_price,
-      };
-    } catch {
-      throw new BadGatewayException(`Token validado, mas a consulta do item ${itemId} falhou.`);
     }
   }
 
