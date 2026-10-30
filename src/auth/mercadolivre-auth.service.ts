@@ -21,14 +21,6 @@ export interface MercadoLivreAccountResponse {
   nickname: string;
 }
 
-export interface MercadoLivrePriceSample {
-  id: string;
-  title: string;
-  price: number;
-  originalPrice: number | null;
-  currencyId: string;
-}
-
 @Injectable()
 export class MercadoLivreAuthService {
   private readonly pending = new Map<string, PendingAuthorization>();
@@ -73,8 +65,7 @@ export class MercadoLivreAuthService {
 
     const token = await this.exchangeCode(input.code, pending.codeVerifier);
     const account = await this.validateToken(token.access_token);
-    const priceSample = await this.queryPriceSample(token.access_token);
-    return { token, account, priceSample, expiresIn: token.expires_in };
+    return { token, account, expiresIn: token.expires_in };
   }
 
   private async exchangeCode(code: string, codeVerifier?: string): Promise<TokenResponse> {
@@ -109,35 +100,6 @@ export class MercadoLivreAuthService {
       return { id: data.id, nickname: data.nickname };
     } catch {
       throw new BadGatewayException('Token recebido, mas a validação em /users/me falhou.');
-    }
-  }
-
-  private async queryPriceSample(accessToken: string): Promise<MercadoLivrePriceSample[]> {
-    const siteId = this.config.get('ML_SITE_ID', 'MLB');
-    try {
-      const { data } = await firstValueFrom(
-        this.http.get<{
-          results: Array<{
-            id: string;
-            title: string;
-            price: number;
-            original_price: number | null;
-            currency_id: string;
-          }>;
-        }>(`https://api.mercadolibre.com/sites/${siteId}/search`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          params: { q: 'notebook', limit: 3 },
-        }),
-      );
-      return data.results.map((item) => ({
-        id: item.id,
-        title: item.title,
-        price: item.price,
-        originalPrice: item.original_price,
-        currencyId: item.currency_id,
-      }));
-    } catch {
-      throw new BadGatewayException('Token validado, mas a consulta de anúncios/preços falhou.');
     }
   }
 
