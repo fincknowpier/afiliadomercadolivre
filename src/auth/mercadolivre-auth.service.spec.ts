@@ -28,14 +28,34 @@ describe('MercadoLivreAuthService', () => {
       post: jest.fn().mockReturnValue(of({
         data: { access_token: 'access-token', expires_in: 21600, user_id: 10491471 },
       })),
-      get: jest.fn().mockReturnValue(of({
-        data: {
-          id: 10491471,
-          nickname: 'FINCKNOWPIER',
-          email: 'nao-deve-ser-exposto@example.com',
-          identification: { type: 'CPF', number: '00000000000' },
-        },
-      })),
+      get: jest.fn()
+        .mockReturnValueOnce(of({
+          data: {
+            id: 10491471,
+            nickname: 'FINCKNOWPIER',
+            email: 'nao-deve-ser-exposto@example.com',
+            identification: { type: 'CPF', number: '00000000000' },
+          },
+        }))
+        .mockReturnValueOnce(of({
+          data: {
+            id: 'MLB5307984376',
+            title: 'Produto de teste',
+            category_id: 'MLB123',
+            permalink: 'https://produto.mercadolivre.com.br/MLB-5307984376',
+            currency_id: 'BRL',
+          },
+        }))
+        .mockReturnValueOnce(of({
+          data: {
+            prices: [{
+              type: 'standard',
+              amount: 999.9,
+              regular_amount: 1099.9,
+              last_updated: '2026-10-29T12:00:00Z',
+            }],
+          },
+        })),
     } as unknown as HttpService;
     const secureConfig = new ConfigService({
       ML_CLIENT_ID: '5938730542536945',
@@ -54,5 +74,10 @@ describe('MercadoLivreAuthService', () => {
     expect(result.account).toEqual({ id: 10491471, nickname: 'FINCKNOWPIER' });
     expect(result.account).not.toHaveProperty('email');
     expect(result.account).not.toHaveProperty('identification');
+    expect(result.itemProof).toMatchObject({
+      id: 'MLB5307984376',
+      currencyId: 'BRL',
+      prices: [{ amount: 999.9, regularAmount: 1099.9 }],
+    });
   });
 });
