@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { AdminGuard } from './admin.guard';
 import { OfferInput, OffersService } from './offers.service';
 
 @Controller('api/offers')
+@UseGuards(AdminGuard)
 export class OffersController {
   constructor(private readonly offers: OffersService) {}
 
