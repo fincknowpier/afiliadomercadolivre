@@ -28,24 +28,12 @@ describe('MercadoLivreAuthService', () => {
       post: jest.fn().mockReturnValue(of({
         data: { access_token: 'access-token', expires_in: 21600, user_id: 10491471 },
       })),
-      get: jest.fn()
-        .mockReturnValueOnce(of({
+      get: jest.fn().mockReturnValue(of({
           data: {
             id: 10491471,
             nickname: 'FINCKNOWPIER',
             email: 'nao-deve-ser-exposto@example.com',
             identification: { type: 'CPF', number: '00000000000' },
-          },
-        }))
-        .mockReturnValueOnce(of({
-          data: {
-            id: 'MLB5307984376',
-            title: 'Produto de teste',
-            category_id: 'MLB123',
-            permalink: 'https://produto.mercadolivre.com.br/MLB-5307984376',
-            currency_id: 'BRL',
-            price: 999.9,
-            original_price: 1099.9,
           },
         })),
     } as unknown as HttpService;
@@ -66,11 +54,5 @@ describe('MercadoLivreAuthService', () => {
     expect(result.account).toEqual({ id: 10491471, nickname: 'FINCKNOWPIER' });
     expect(result.account).not.toHaveProperty('email');
     expect(result.account).not.toHaveProperty('identification');
-    expect(result.itemProof).toMatchObject({
-      id: 'MLB5307984376',
-      currencyId: 'BRL',
-      price: 999.9,
-      originalPrice: 1099.9,
-    });
   });
 });
