@@ -27,12 +27,8 @@ export interface MercadoLivreItemProof {
   categoryId: string;
   permalink: string;
   currencyId: string;
-  prices: Array<{
-    type: string;
-    amount: number;
-    regularAmount: number | null;
-    lastUpdated: string;
-  }>;
+  price: number;
+  originalPrice: number | null;
 }
 
 @Injectable()
@@ -122,35 +118,25 @@ export class MercadoLivreAuthService {
     const itemId = this.config.get('ML_POC_ITEM_ID', 'MLB5307984376');
     const headers = { Authorization: `Bearer ${accessToken}` };
     try {
-      const [{ data: item }, { data: priceData }] = await Promise.all([
-        firstValueFrom(this.http.get<{
+      const { data: item } = await firstValueFrom(
+        this.http.get<{
           id: string;
           title: string;
           category_id: string;
           permalink: string;
           currency_id: string;
-        }>(`https://api.mercadolibre.com/items/${encodeURIComponent(itemId)}`, { headers })),
-        firstValueFrom(this.http.get<{
-          prices: Array<{
-            type: string;
-            amount: number;
-            regular_amount: number | null;
-            last_updated: string;
-          }>;
-        }>(`https://api.mercadolibre.com/items/${encodeURIComponent(itemId)}/prices`, { headers })),
-      ]);
+          price: number;
+          original_price: number | null;
+        }>(`https://api.mercadolibre.com/items/${encodeURIComponent(itemId)}`, { headers }),
+      );
       return {
         id: item.id,
         title: item.title,
         categoryId: item.category_id,
         permalink: item.permalink,
         currencyId: item.currency_id,
-        prices: priceData.prices.map((price) => ({
-          type: price.type,
-          amount: price.amount,
-          regularAmount: price.regular_amount,
-          lastUpdated: price.last_updated,
-        })),
+        price: item.price,
+        originalPrice: item.original_price,
       };
     } catch {
       throw new BadGatewayException(`Token validado, mas a consulta do item ${itemId} falhou.`);
