@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+import { of } from 'rxjs';
 import { MercadoLivreAuthService } from './mercadolivre-auth.service';
 
 describe('MercadoLivreAuthService', () => {
@@ -20,5 +21,57 @@ describe('MercadoLivreAuthService', () => {
     expect(url.searchParams.get('state')).toBeTruthy();
     expect(url.searchParams.get('code_challenge_method')).toBe('S256');
     expect(url.searchParams.get('code_challenge')).toBeTruthy();
+  });
+
+  it('retorna somente os dados mínimos da conta validada', async () => {
+    const http = {
+      post: jest.fn().mockReturnValue(of({
+        data: { access_token: 'access-token', expires_in: 21600, user_id: 10491471 },
+      })),
+      get: jest.fn()
+        .mockReturnValueOnce(of({
+          data: {
+            id: 10491471,
+            nickname: 'FINCKNOWPIER',
+            email: 'nao-deve-ser-exposto@example.com',
+            identification: { type: 'CPF', number: '00000000000' },
+          },
+        }))
+        .mockReturnValueOnce(of({
+          data: {
+            results: [{
+              id: 'MLB123',
+              title: 'Notebook de teste',
+              price: 2999.9,
+              original_price: 3499.9,
+              currency_id: 'BRL',
+            }],
+          },
+        })),
+    } as unknown as HttpService;
+    const secureConfig = new ConfigService({
+      ML_CLIENT_ID: '5938730542536945',
+      ML_CLIENT_SECRET: 'secret',
+      ML_REDIRECT_URI: 'https://radar-promocoes-api.onrender.com/auth/mercadolivre/callback',
+      ML_OAUTH_USE_PKCE: 'false',
+    });
+    const secureService = new MercadoLivreAuthService(http, secureConfig);
+    const authorizationUrl = new URL(secureService.createAuthorizationUrl());
+
+    const result = await secureService.completeAuthorization({
+      code: 'authorization-code',
+      state: authorizationUrl.searchParams.get('state')!,
+    });
+
+    expect(result.account).toEqual({ id: 10491471, nickname: 'FINCKNOWPIER' });
+    expect(result.account).not.toHaveProperty('email');
+    expect(result.account).not.toHaveProperty('identification');
+    expect(result.priceSample).toEqual([{
+      id: 'MLB123',
+      title: 'Notebook de teste',
+      price: 2999.9,
+      originalPrice: 3499.9,
+      currencyId: 'BRL',
+    }]);
   });
 });
