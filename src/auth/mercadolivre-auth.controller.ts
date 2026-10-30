@@ -23,13 +23,9 @@ export class MercadoLivreAuthController {
     return {
       status: 'VALIDADO',
       account: result.account,
-      proofOfConcept: {
-        query: 'notebook',
-        items: result.priceSample,
-      },
       expiresInSeconds: result.expiresIn,
       tokenStored: false,
-      nextStep: 'Persistir os tokens criptografados antes de ativar o monitoramento automático.',
+      nextStep: 'Persistir os tokens criptografados e testar um ITEM_ID específico.',
     };
   }
 }
