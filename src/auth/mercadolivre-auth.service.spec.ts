@@ -44,16 +44,8 @@ describe('MercadoLivreAuthService', () => {
             category_id: 'MLB123',
             permalink: 'https://produto.mercadolivre.com.br/MLB-5307984376',
             currency_id: 'BRL',
-          },
-        }))
-        .mockReturnValueOnce(of({
-          data: {
-            prices: [{
-              type: 'standard',
-              amount: 999.9,
-              regular_amount: 1099.9,
-              last_updated: '2026-10-29T12:00:00Z',
-            }],
+            price: 999.9,
+            original_price: 1099.9,
           },
         })),
     } as unknown as HttpService;
@@ -77,7 +69,8 @@ describe('MercadoLivreAuthService', () => {
     expect(result.itemProof).toMatchObject({
       id: 'MLB5307984376',
       currencyId: 'BRL',
-      prices: [{ amount: 999.9, regularAmount: 1099.9 }],
+      price: 999.9,
+      originalPrice: 1099.9,
     });
   });
 });
