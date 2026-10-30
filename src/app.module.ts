@@ -6,6 +6,8 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
+import { OffersModule } from './offers/offers.module';
+import { CreateOffers1793310000000 } from './migrations/1793310000000-CreateOffers';
 import { ProductsModule } from './products/products.module';
 import { RulesModule } from './rules/rules.module';
 import { TelegramModule } from './telegram/telegram.module';
@@ -21,6 +23,8 @@ import { TelegramModule } from './telegram/telegram.module';
         url: config.getOrThrow<string>('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: config.get('NODE_ENV') !== 'production',
+        migrations: [CreateOffers1793310000000],
+        migrationsRun: true,
       }),
     }),
     AuthModule,
@@ -29,6 +33,7 @@ import { TelegramModule } from './telegram/telegram.module';
     RulesModule,
     TelegramModule,
     MonitoringModule,
+    OffersModule,
   ],
   controllers: [AppController],
 })
