@@ -32,7 +32,7 @@ A PoC chama `/users/me` e faz uma busca amostral. Só a saída `status: VALIDADO
 Configure `ML_CLIENT_SECRET` somente no ambiente do servidor. Com a API publicada, acesse:
 
 ```text
-https://api.radarpromocoesreais.com.br/auth/mercadolivre/start
+https://radar-promocoes-api.onrender.com/auth/mercadolivre/start
 ```
 
 Abra a `authorizationUrl` retornada. O callback valida `state`, usa PKCE S256, troca o código por tokens no backend e confirma a conta em `/users/me`. Nesta fase os tokens ainda não são persistidos; o monitoramento automático só será habilitado após armazenamento criptografado.
@@ -56,10 +56,9 @@ O `render.yaml` cria a API e o PostgreSQL; o `Dockerfile` gera a imagem de produ
 Depois do primeiro deploy:
 
 1. Confirme que `https://SEU-SERVICO.onrender.com/health` responde com `status: ok`.
-2. Adicione `api.radarpromocoesreais.com.br` em **Settings > Custom Domains**.
-3. No provedor DNS, crie o CNAME indicado pelo Render e remova registros conflitantes desse subdomínio.
-4. Aguarde a verificação e o certificado HTTPS.
-5. Só então abra `/auth/mercadolivre/start` pelo domínio definitivo.
+2. Use `https://radar-promocoes-api.onrender.com` como domínio oficial do MVP.
+3. Cadastre exatamente `https://radar-promocoes-api.onrender.com/auth/mercadolivre/callback` como Redirect URI no Mercado Livre.
+4. Abra `/auth/mercadolivre/start` pelo domínio do Render.
 
 ## Regras iniciais
 
