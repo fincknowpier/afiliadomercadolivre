@@ -23,9 +23,10 @@ export class MercadoLivreAuthController {
     return {
       status: 'VALIDADO',
       account: result.account,
+      proofOfConcept: result.itemProof,
       expiresInSeconds: result.expiresIn,
       tokenStored: false,
-      nextStep: 'Persistir os tokens criptografados e testar um ITEM_ID específico.',
+      nextStep: 'Persistir os tokens criptografados antes de ativar o histórico automático.',
     };
   }
 }
