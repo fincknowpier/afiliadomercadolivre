@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DealRuleService } from '../rules/deal-rule.service';
 import { Offer } from './offer.entity';
+import { OfferPriceHistory } from './offer-price-history.entity';
 
 export interface OfferInput {
   titulo: string;
@@ -20,6 +21,7 @@ const ALLOWED_CATEGORIES = ['Eletrônicos', 'Esportes e fitness', 'Casa e cozinh
 export class OffersService {
   constructor(
     @InjectRepository(Offer) private readonly offers: Repository<Offer>,
+    @InjectRepository(OfferPriceHistory) private readonly prices: Repository<OfferPriceHistory>,
     private readonly rules: DealRuleService,
   ) {}
 
@@ -47,6 +49,7 @@ export class OffersService {
       const rating = this.number(input.avaliacao);
       const decision = this.rules.evaluate({ currentPrice, historicalAverage: referencePrice, rating });
       const existing = await this.offers.findOneBy({ productUrl: input.url_produto.trim() });
+      const previousCurrentPrice = existing ? Number(existing.currentPrice) : undefined;
       const offer = this.offers.create({
         ...(existing ?? {}),
         title: input.titulo.trim(),
@@ -61,6 +64,9 @@ export class OffersService {
         rejectionReasons: decision.reasons,
       });
       const saved = await this.offers.save(offer);
+      if (previousCurrentPrice === undefined || previousCurrentPrice !== currentPrice) {
+        await this.prices.save(this.prices.create({ offerId: saved.id, price: currentPrice }));
+      }
       results.push({
         line: index + 2,
         imported: true,
@@ -78,6 +84,50 @@ export class OffersService {
       invalid: results.filter((result) => !result.imported).length,
       results,
     };
+  }
+
+  async update(
+    id: string,
+    input: { preco_atual: number | string; preco_anterior: number | string; url_afiliado?: string },
+  ) {
+    const offer = await this.offers.findOneBy({ id });
+    if (!offer) throw new NotFoundException('Oferta não encontrada.');
+
+    const currentPrice = this.number(input.preco_atual);
+    const referencePrice = this.number(input.preco_anterior);
+    if (!(currentPrice > 0)) throw new BadRequestException('Preço atual inválido.');
+    if (!(referencePrice > 0)) throw new BadRequestException('Preço anterior inválido.');
+    if (input.url_afiliado !== undefined && !this.isUrl(input.url_afiliado)) {
+      throw new BadRequestException('URL de afiliado inválida.');
+    }
+
+    const priceChanged = Number(offer.currentPrice) !== currentPrice;
+    const decision = this.rules.evaluate({
+      currentPrice,
+      historicalAverage: referencePrice,
+      rating: Number(offer.rating),
+    });
+    offer.currentPrice = currentPrice;
+    offer.referencePrice = referencePrice;
+    if (input.url_afiliado !== undefined) offer.affiliateUrl = input.url_afiliado.trim();
+    offer.approved = decision.approved;
+    offer.discountPercent = decision.discountPercent;
+    offer.rejectionReasons = decision.reasons;
+    const saved = await this.offers.save(offer);
+
+    if (priceChanged) {
+      await this.prices.save(this.prices.create({ offerId: saved.id, price: currentPrice }));
+    }
+    return saved;
+  }
+
+  async priceHistory(id: string) {
+    if (!await this.offers.existsBy({ id })) throw new NotFoundException('Oferta não encontrada.');
+    return this.prices.find({
+      where: { offerId: id },
+      order: { recordedAt: 'DESC' },
+      take: 10,
+    });
   }
 
   private validate(input: OfferInput): string[] {

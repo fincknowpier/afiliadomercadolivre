@@ -8,6 +8,7 @@ import { MarketplaceModule } from './marketplace/marketplace.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { OffersModule } from './offers/offers.module';
 import { CreateOffers1793310000000 } from './migrations/1793310000000-CreateOffers';
+import { CreateOfferPriceHistory1793396400000 } from './migrations/1793396400000-CreateOfferPriceHistory';
 import { ProductsModule } from './products/products.module';
 import { RulesModule } from './rules/rules.module';
 import { TelegramModule } from './telegram/telegram.module';
@@ -23,7 +24,7 @@ import { TelegramModule } from './telegram/telegram.module';
         url: config.getOrThrow<string>('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: config.get('NODE_ENV') !== 'production',
-        migrations: [CreateOffers1793310000000],
+        migrations: [CreateOffers1793310000000, CreateOfferPriceHistory1793396400000],
         migrationsRun: true,
       }),
     }),
