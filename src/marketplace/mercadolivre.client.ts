@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { BadGatewayException, ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { isAxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { MercadoLivreTokenStore } from './mercadolivre-token.store';
 
@@ -51,11 +52,20 @@ export class MercadoLivreClient {
   }
 
   async getItem(itemId: string): Promise<MercadoLivreItem> {
-    const { data } = await firstValueFrom(
-      this.http.get(`${this.baseUrl}/items/${encodeURIComponent(itemId)}`, {
-        headers: this.headers(),
-      }),
-    );
-    return data;
+    try {
+      const { data } = await firstValueFrom(
+        this.http.get(`${this.baseUrl}/items/${encodeURIComponent(itemId)}`, {
+          headers: this.headers(),
+        }),
+      );
+      return data;
+    } catch (error) {
+      if (isAxiosError(error) && error.response?.status === 403) {
+        throw new ForbiddenException(
+          'O Mercado Livre não autorizou esta aplicação a consultar esse anúncio.',
+        );
+      }
+      throw new BadGatewayException('Falha ao consultar o anúncio na API oficial do Mercado Livre.');
+    }
   }
 }
