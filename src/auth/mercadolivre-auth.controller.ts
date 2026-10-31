@@ -24,8 +24,13 @@ export class MercadoLivreAuthController {
       status: 'VALIDADO',
       account: result.account,
       expiresInSeconds: result.expiresIn,
-      tokenStored: false,
-      nextStep: 'Solicitar ao Mercado Livre acesso oficial a anúncios de terceiros para o caso de uso afiliado.',
+      tokenStored: 'memory',
+      nextStep: 'Teste a consulta oficial do anúncio. Uma reinicialização exigirá nova autorização.',
     };
+  }
+
+  @Get('status')
+  status() {
+    return this.auth.authorizationStatus();
   }
 }

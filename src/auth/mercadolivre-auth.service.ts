@@ -3,6 +3,7 @@ import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/co
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'node:crypto';
 import { firstValueFrom } from 'rxjs';
+import { MercadoLivreTokenStore } from '../marketplace/mercadolivre-token.store';
 
 interface PendingAuthorization {
   codeVerifier?: string;
@@ -28,6 +29,7 @@ export class MercadoLivreAuthService {
   constructor(
     private readonly http: HttpService,
     private readonly config: ConfigService,
+    private readonly tokens: MercadoLivreTokenStore,
   ) {}
 
   createAuthorizationUrl(): string {
@@ -65,7 +67,12 @@ export class MercadoLivreAuthService {
 
     const token = await this.exchangeCode(input.code, pending.codeVerifier);
     const account = await this.validateToken(token.access_token);
+    this.tokens.set(token);
     return { token, account, expiresIn: token.expires_in };
+  }
+
+  authorizationStatus() {
+    return this.tokens.status();
   }
 
   private async exchangeCode(code: string, codeVerifier?: string): Promise<TokenResponse> {

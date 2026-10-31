@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
+import { MercadoLivreTokenStore } from './mercadolivre-token.store';
 
 export interface MercadoLivreItem {
   id: string;
@@ -20,10 +21,11 @@ export class MercadoLivreClient {
   constructor(
     private readonly http: HttpService,
     private readonly config: ConfigService,
+    private readonly tokens: MercadoLivreTokenStore,
   ) {}
 
   private headers() {
-    const token = this.config.get<string>('ML_ACCESS_TOKEN');
+    const token = this.tokens.accessToken() ?? this.config.get<string>('ML_ACCESS_TOKEN');
     if (!token) {
       throw new Error('ML_ACCESS_TOKEN ausente. Autorize a aplicação via OAuth antes da consulta.');
     }

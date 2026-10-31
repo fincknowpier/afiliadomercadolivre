@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { of } from 'rxjs';
 import { MercadoLivreAuthService } from './mercadolivre-auth.service';
+import { MercadoLivreTokenStore } from '../marketplace/mercadolivre-token.store';
 
 describe('MercadoLivreAuthService', () => {
   const config = new ConfigService({
@@ -9,7 +10,7 @@ describe('MercadoLivreAuthService', () => {
     ML_REDIRECT_URI: 'https://radar-promocoes-api.onrender.com/auth/mercadolivre/callback',
     ML_OAUTH_USE_PKCE: 'true',
   });
-  const service = new MercadoLivreAuthService({} as HttpService, config);
+  const service = new MercadoLivreAuthService({} as HttpService, config, new MercadoLivreTokenStore());
 
   it('cria URL oficial com state e PKCE', () => {
     const url = new URL(service.createAuthorizationUrl());
@@ -43,7 +44,8 @@ describe('MercadoLivreAuthService', () => {
       ML_REDIRECT_URI: 'https://radar-promocoes-api.onrender.com/auth/mercadolivre/callback',
       ML_OAUTH_USE_PKCE: 'false',
     });
-    const secureService = new MercadoLivreAuthService(http, secureConfig);
+    const tokens = new MercadoLivreTokenStore();
+    const secureService = new MercadoLivreAuthService(http, secureConfig, tokens);
     const authorizationUrl = new URL(secureService.createAuthorizationUrl());
 
     const result = await secureService.completeAuthorization({
@@ -54,5 +56,6 @@ describe('MercadoLivreAuthService', () => {
     expect(result.account).toEqual({ id: 10491471, nickname: 'FINCKNOWPIER' });
     expect(result.account).not.toHaveProperty('email');
     expect(result.account).not.toHaveProperty('identification');
+    expect(tokens.status()).toMatchObject({ authorized: true, userId: 10491471 });
   });
 });
